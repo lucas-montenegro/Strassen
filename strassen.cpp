@@ -22,6 +22,20 @@ void print_matrix(int z) {
 	}
 }
 
+void create_matrix(vector<vector<int>> &partial_matrix, vector<vector<int>> &matrix, int i, int j, int z) {
+	partial_matrix.resize(z);
+
+	for(int aux = 0; aux < z; aux++) {
+		partial_matrix[aux].resize(z);
+	}
+
+	for(int a = 0; a < z; a++) {
+		for(int b = 0; b < z; b++) {
+			partial_matrix[a][b] = matrix[a + i][b + j];
+		}
+	}
+}
+
 void create_all_matrices(vector<vector<int>> &s1, vector<vector<int>> &s2, vector<vector<int>> &s3, vector<vector<int>> &s4, vector<vector<int>> &s5, vector<vector<int>> &s6, vector<vector<int>> &s7, vector<vector<int>> &s8, vector<vector<int>> &s9, vector<vector<int>> &s10, int z) {
 	s1.resize(z);
 	s2.resize(z);
@@ -48,54 +62,70 @@ void create_all_matrices(vector<vector<int>> &s1, vector<vector<int>> &s2, vecto
 	}
 }
 
-void operation(vector<vector<int>> &matrix_r, vector<vector<int>> &matrix_1, vector<vector<int>> &matrix_2, int i1_inicial, int j1_inicial, int i2_inicial, int j2_inicial, int option, int z) {
+void operation(vector<vector<int>> &matrix_r, vector<vector<int>> &matrix_1, vector<vector<int>> &matrix_2, int option, int z) {
 	if(option == 0) { // faz a soma da matriz 1 com a matriz 2
 		for(int i = 0; i < z; i++) {
 			for(int j = 0; j < z; j++) {
-				matrix_r[i][j] = matrix_1[i1_inicial + i][j1_inicial + j] + matrix_2[i2_inicial + i][j2_inicial + j]; 
+				matrix_r[i][j] = matrix_1[i][j] + matrix_2[i][j]; 
 			}
 		}
 	}
 	else { // faz a subtração da matriz 1 com a matriz 2
 		for(int i = 0; i < z; i++) {
 			for(int j = 0; j < z; j++) {
-				matrix_r[i][j] = matrix_1[i1_inicial + i][j1_inicial + j] - matrix_2[i2_inicial + i][j2_inicial + j]; 
+				matrix_r[i][j] = matrix_1[i][j] - matrix_2[i][j]; 
 			}
 		}
 	}
 }
 
-int strassen(vector<vector<int>> &A, vector<vector<int>> &B, int i_inicial, int j_inicial, int z) {
+vector<vector<int>> strassen(vector<vector<int>> &A, vector<vector<int>> &B, int z) {
 	if(z == 1) {
-		return A[i_inicial][j_inicial] * B[i_inicial][j_inicial];
+		vector<vector<int>> result;
+		result.resize(1);
+		result[0].resize(1);
+		result[0][0] = A[0][0] * B[0][0];
+		return result;
 	}
 	else {
 		z /= 2;
+		vector<vector<int>> A11, A12, A21, A22, B11, B12, B21, B22;
+		create_matrix(A11, A, 0, 0, z);
+		create_matrix(A12, A, 0, z, z);
+		create_matrix(A21, A, z, 0, z);
+		create_matrix(A22, A, z, z, z);
+		create_matrix(B11, B, 0, 0, z);
+		create_matrix(B12, B, 0, z, z);
+		create_matrix(B21, B, z, 0, z);
+		create_matrix(B22, B, z, z, z);
+
 		vector<vector<int>> s1, s2, s3, s4, s5, s6, s7, s8, s9, s10;
 		create_all_matrices(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, z);
-		operation(s1, B, B, i_inicial, z / 2, z / 2, z / 2, 1, z);
-		operation(s2, A, A, i_inicial, j_inicial, i_inicial, z / 2, 0, z); 
-		operation(s3, A, A, z / 2, j_inicial, z / 2, z / 2, 0, z); 
-		operation(s4, B, B, z / 2, j_inicial, i_inicial, j_inicial, 1, z);
-		operation(s5, A, A, i_inicial, j_inicial, z / 2, z / 2, 0, z);
-		operation(s6, B, B, i_inicial, j_inicial, z / 2, z / 2, 0, z);
-		operation(s7, A, A, i_inicial, z / 2, z / 2, z / 2, 1, z);
-		operation(s8, B, B, z / 2, j_inicial, z / 2, z / 2, 0, z);
-		operation(s9, A, A, i_inicial, j_inicial, z / 2, j_inicial, 1, z);
-		operation(s10, B, B, i_inicial, j_inicial, i_inicial, z / 2, 0, z);
+		operation(s1, B12, B22, 1, z);
+		operation(s2, A11, A12, 0, z); 
+		operation(s3, A21, A22, 0, z); 
+		operation(s4, B21, B11, 1, z);
+		operation(s5, A11, A22, 0, z);
+		operation(s6, B11, B22, 0, z);
+		operation(s7, A12, A22, 1, z);
+		operation(s8, B21, B22, 0, z);
+		operation(s9, A11, A21, 1, z);
+		operation(s10, B11, B12, 0, z);
 
-		int p1 = strassen(A, s1, i_inicial, j_inicial, z);
-		int p2 = strassen(s2, B, z / 2, z / 2, z);
-		int p3 = strassen(s3, B, i_inicial, j_inicial, z);
-		int p4 = strassen(A, s4, z / 2, z / 2, z);
-		int p5 = strassen(s5, s6, i_inicial, j_inicial, z);
-		int p6 = strassen(s7, s8, i_inicial, j_inicial, z);
-		int p7 = strassen(s9, s10, i_inicial, j_inicial, z);
+		vector<vector<int>> p1 = strassen(A11, s1, z);
+		vector<vector<int>> p2 = strassen(s2, B22, z);
+		vector<vector<int>> p3 = strassen(s3, B11, z);
+		vector<vector<int>> p4 = strassen(A22, s4, z);
+		vector<vector<int>> p5 = strassen(s5, s6, z);
+		vector<vector<int>> p6 = strassen(s7, s8, z);
+		vector<vector<int>> p7 = strassen(s9, s10, z);
 
-		C[i_inicial][j_inicial] = p5 + p4 - p2 + p6;
-		C[i_inicial][z / 2] = p1 + p2;
-		C[z / 2][j_inicial] = p3 + p4;
-		C[z / 2][z / 2] = p5 + p1 - p3 - p7;
+		cout << "Entrou" << "\n";
+
+		//C[i_inicial][j_inicial] = p5 + p4 - p2 + p6;
+		//C[i_inicial][z / 2] = p1 + p2;
+		//C[z / 2][j_inicial] = p3 + p4;
+		//C[z / 2][z / 2] = p5 + p1 - p3 - p7;
 	}
 }
 
@@ -149,7 +179,7 @@ int main() {
 			cin >> B[i][j];
 		}
 	}
-	strassen(A, B, 0, 0, z);
+	C = strassen(A, B, z);
 
 	for(int i = 0; i < z; i++) {
 		for(int j = 0; j < z; j++) {
