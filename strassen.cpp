@@ -120,12 +120,17 @@ vector<vector<int>> strassen(vector<vector<int>> &A, vector<vector<int>> &B, int
 		vector<vector<int>> p6 = strassen(s7, s8, z);
 		vector<vector<int>> p7 = strassen(s9, s10, z);
 
-		cout << "Entrou" << "\n";
-
-		//C[i_inicial][j_inicial] = p5 + p4 - p2 + p6;
-		//C[i_inicial][z / 2] = p1 + p2;
-		//C[z / 2][j_inicial] = p3 + p4;
-		//C[z / 2][z / 2] = p5 + p1 - p3 - p7;
+		//cout << "entrou" << "\n";
+		for(int i = 0; i < z; i++) {
+			for(int j = 0; j < z; j++) {
+				C[i][j] = p5[i][j] + p4[i][j] - p2[i][j] + p6[i][j];
+				C[i][z + j] = p1[i][j] + p2[i][j];
+				C[z + i][j] = p3[i][j] + p4[i][j];
+				C[z + i][z + j] = p5[i][j] + p1[i][j] - p3[i][j] - p7[i][j];
+			}
+		}
+		
+		return C;
 	}
 }
 
@@ -181,8 +186,8 @@ int main() {
 	}
 	C = strassen(A, B, z);
 
-	for(int i = 0; i < z; i++) {
-		for(int j = 0; j < z; j++) {
+	for(int i = 0; i < N1; i++) {
+		for(int j = 0; j < M2; j++) {
 			cout << C[i][j] << " ";
 		}
 		cout << "\n";
