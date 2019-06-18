@@ -190,7 +190,7 @@ int main() {
 
 	for(int i = 0; i < N1; i++) {
 		for(int j = 0; j < M2; j++) {
-			cout << C[i][j] << " ";
+			cout << C[i][j] <<" ";
 		}
 		cout << "\n";
 	}
